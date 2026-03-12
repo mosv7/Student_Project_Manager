@@ -1,0 +1,18 @@
+{
+  "furniture": [
+    { "id": "bed",       "name": "Bed",       "width": 2, "height": 2, "icon": "🛏️" },
+    { "id": "sofa",      "name": "Sofa",      "width": 2, "height": 1, "icon": "🛋️" },
+    { "id": "table",     "name": "Table",     "width": 1, "height": 1, "icon": "🪑" },
+    { "id": "chair",     "name": "Chair",     "width": 1, "height": 1, "icon": "🪑" },
+    { "id": "tv",        "name": "TV",        "width": 2, "height": 0.5,"icon": "📺" },
+    { "id": "fridge",    "name": "Fridge",    "width": 1, "height": 1, "icon": "🧊" },
+    { "id": "desk",      "name": "Desk",      "width": 2, "height": 1, "icon": "🖥️" },
+    { "id": "wardrobe",  "name": "Wardrobe",  "width": 2, "height": 1, "icon": "🚪" },
+    { "id": "bathtub",   "name": "Bathtub",   "width": 2, "height": 1, "icon": "🛁" },
+    { "id": "toilet",    "name": "Toilet",    "width": 1, "height": 1, "icon": "🚽" },
+    { "id": "sink",      "name": "Sink",      "width": 1, "height": 1, "icon": "🚰" },
+    { "id": "stove",     "name": "Stove",     "width": 1, "height": 1, "icon": "🍳" },
+    { "id": "bookshelf", "name": "Bookshelf", "width": 2, "height": 0.5,"icon": "📚" },
+    { "id": "plant",     "name": "Plant",     "width": 1, "height": 1, "icon": "🌿" }
+  ]
+}

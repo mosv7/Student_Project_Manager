@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart House Layout Planner — AI Powered</title>
+  <meta name="description"
+    content="AI-based smart house layout planner using CSP constraint satisfaction problem solver with 2D and 3D visualization.">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+    rel="stylesheet">
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- ─────────────────────── HEADER ─────────────────────── -->
+  <header class="app-header">
+    <div class="header-content">
+      <div class="brand">
+        <span class="brand-icon">🏠</span>
+        <div class="brand-text">
+          <h1 class="brand-name">SmartFloor <span class="brand-ai">AI</span></h1>
+          <p class="brand-sub">Constraint Satisfaction Layout Planner</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- View Toggle -->
+        <div class="view-toggle" id="viewToggle" role="group" aria-label="View mode">
+          <button class="toggle-btn active" id="btn2D" onclick="switchView('2d')">
+            <span>⬛</span> 2D Editor
+          </button>
+          <button class="toggle-btn" id="btn3D" onclick="switchView('3d')">
+            <span>◈</span> 3D View
+          </button>
+        </div>
+
+        <button class="icon-btn" id="btnExportJSON" title="Export layout as JSON" onclick="exportJSON()">
+          <span>⬇</span> Export
+        </button>
+        <button class="icon-btn" id="btnExportImg" title="Export as image" onclick="exportImage()">
+          <span>🖼</span> Image
+        </button>
+        <button class="icon-btn danger" id="btnReset" title="Reset layout" onclick="resetLayout()">
+          <span>↺</span> Reset
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─────────────────────── MAIN LAYOUT ─────────────────────── -->
+  <main class="app-body">
+
+    <!-- ══════════ LEFT PANEL — Configuration ══════════ -->
+    <aside class="panel left-panel" id="leftPanel">
+      <div class="panel-header">
+        <h2>🏗️ House Config</h2>
+      </div>
+
+      <!-- House Dimensions -->
+      <section class="config-section">
+        <h3 class="section-title">House Dimensions</h3>
+        <div class="input-group">
+          <label for="houseWidth">Width (m)</label>
+          <input type="number" id="houseWidth" class="inp" value="12" min="4" max="50" step="1">
+        </div>
+        <div class="input-group">
+          <label for="houseHeight">Height (m)</label>
+          <input type="number" id="houseHeight" class="inp" value="10" min="4" max="50" step="1">
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- Room List -->
+      <section class="config-section">
+        <div class="section-header-row">
+          <h3 class="section-title">Rooms</h3>
+          <button class="small-btn" id="btnAddRoom" onclick="openAddRoomModal()">+ Add</button>
+        </div>
+        <ul class="room-list" id="roomList"></ul>
+      </section>
+
+      <hr class="divider">
+
+      <!-- Actions -->
+      <section class="config-section">
+        <button class="primary-btn" id="btnGenerate" onclick="generateLayout()">
+          <span class="btn-icon">✨</span>
+          Generate AI Layout
+        </button>
+
+        <div class="score-display" id="scoreDisplay" style="display:none;">
+          <span class="score-label">Layout Score</span>
+          <span class="score-value" id="scoreValue">—</span>
+          <span class="score-hint" id="scoreHint"></span>
+        </div>
+
+        <div id="solverInfo" class="solver-info" style="display:none;">
+          <small id="solverDetails"></small>
+        </div>
+
+        <button class="secondary-btn" id="btnSave" onclick="saveLayout()" style="display:none;">
+          💾 Save Layout
+        </button>
+        <button class="secondary-btn" id="btnLoad" onclick="loadLayout()">
+          📂 Load Saved
+        </button>
+      </section>
+    </aside>
+
+    <!-- ══════════ CENTER — Canvas / 3D ══════════ -->
+    <section class="center-panel" id="centerPanel">
+
+      <!-- Loading overlay -->
+      <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+        <div class="loading-spinner"></div>
+        <p class="loading-text" id="loadingText">Running AI Solver…</p>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🏠</div>
+        <h2>No Layout Yet</h2>
+        <p>Configure your rooms on the left and click<br><strong>Generate AI Layout</strong> to begin.</p>
+      </div>
+
+      <!-- 2D Canvas Editor -->
+      <div class="canvas-wrapper" id="canvasWrapper" style="display:none;">
+        <div class="canvas-toolbar">
+          <span class="toolbar-label">Grid: 1 cell = 1 m</span>
+          <button class="small-btn" onclick="zoomIn()">+</button>
+          <button class="small-btn" onclick="zoomOut()">−</button>
+          <button class="small-btn" onclick="resetZoom()">⟳</button>
+          <span class="toolbar-hint" id="toolbarHint">Drag rooms to move • Furniture panel →</span>
+        </div>
+        <div class="canvas-scroll" id="canvasScroll">
+          <canvas id="layoutCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- 3D View -->
+      <div class="three-wrapper" id="threeWrapper" style="display:none;">
+        <div class="canvas-toolbar">
+          <span class="toolbar-label">3D View</span>
+          <span class="toolbar-hint">Left-drag: Orbit • Scroll: Zoom • Right-drag: Pan</span>
+        </div>
+        <div id="threeContainer"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ RIGHT PANEL — Furniture ══════════ -->
+    <aside class="panel right-panel" id="rightPanel">
+      <div class="panel-header">
+        <h2>🪑 Furniture</h2>
+      </div>
+
+      <section class="config-section">
+        <p class="hint-text">Click a room first, then drag furniture into it.</p>
+        <div class="furniture-grid" id="furnitureGrid">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- Selected Room Properties -->
+      <section class="config-section" id="roomPropsSection" style="display:none;">
+        <h3 class="section-title">Selected Room</h3>
+        <div id="selectedRoomInfo" class="room-info-card"></div>
+      </section>
+
+      <hr class="divider">
+
+      <section class="config-section">
+        <h3 class="section-title">Room Colors</h3>
+        <div class="color-legend" id="colorLegend"></div>
+      </section>
+    </aside>
+  </main>
+
+  <!-- ─────────────────────── MODALS ─────────────────────── -->
+
+  <!-- Add Room Modal -->
+  <div class="modal-backdrop" id="addRoomModal" style="display:none;"
+    onclick="closeModalBackdrop(event, 'addRoomModal')">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalAddRoomTitle">
+      <div class="modal-header">
+        <h3 id="modalAddRoomTitle">Add Room</h3>
+        <button class="close-btn" onclick="closeModal('addRoomModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="newRoomName">Room Name</label>
+          <input type="text" id="newRoomName" class="inp" placeholder="e.g. Bedroom">
+        </div>
+        <div class="two-col">
+          <div class="input-group">
+            <label for="newRoomW">Width (m)</label>
+            <input type="number" id="newRoomW" class="inp" value="4" min="1" max="20" step="1">
+          </div>
+          <div class="input-group">
+            <label for="newRoomH">Height (m)</label>
+            <input type="number" id="newRoomH" class="inp" value="3" min="1" max="20" step="1">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="newRoomConstraints">Constraints (one per line)</label>
+          <textarea id="newRoomConstraints" class="inp" rows="3"
+            placeholder="near Kitchen&#10;near Bathroom"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="secondary-btn" onclick="closeModal('addRoomModal')">Cancel</button>
+        <button class="primary-btn" onclick="addRoom()">Add Room</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Room Modal -->
+  <div class="modal-backdrop" id="editRoomModal" style="display:none;"
+    onclick="closeModalBackdrop(event, 'editRoomModal')">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalEditRoomTitle">
+      <div class="modal-header">
+        <h3 id="modalEditRoomTitle">Edit Room</h3>
+        <button class="close-btn" onclick="closeModal('editRoomModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editRoomOriginalName">
+        <div class="input-group">
+          <label for="editRoomName">Room Name</label>
+          <input type="text" id="editRoomName" class="inp">
+        </div>
+        <div class="two-col">
+          <div class="input-group">
+            <label for="editRoomW">Width (m)</label>
+            <input type="number" id="editRoomW" class="inp" min="1" max="20" step="1">
+          </div>
+          <div class="input-group">
+            <label for="editRoomH">Height (m)</label>
+            <input type="number" id="editRoomH" class="inp" min="1" max="20" step="1">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="editRoomConstraints">Constraints</label>
+          <textarea id="editRoomConstraints" class="inp" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="secondary-btn danger" onclick="deleteRoomByModal()">Delete</button>
+        <button class="secondary-btn" onclick="closeModal('editRoomModal')">Cancel</button>
+        <button class="primary-btn" onclick="saveEditRoom()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <!-- ─────────────────────── SCRIPTS ─────────────────────── -->
+  <!-- Three.js via importmap (ES modules) -->
+  <script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+  <!-- App scripts (non-module, loaded before 3D module) -->
+  <script src="js/layout.js"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/furniture.js"></script>
+  <!-- 3D scene as ES module so it can import Three.js -->
+  <script type="module" src="js/three_scene.js"></script>
+
+</body>
+
+</html>
