@@ -1,3 +1,5 @@
+// Chain of Responsibility (Middleware)	Behavioral Pattern
+
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
@@ -47,6 +49,7 @@ const upload = multer({
 });
 
 // ─── AUTH HELPERS ─────────────────────────────────────────────────────────────
+//Token-Based Auth Security Pattern
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
 const JWT_EXPIRES = process.env.JWT_EXPIRES_IN || '7d';
 
@@ -80,7 +83,7 @@ const getAuthUser = async (req) => {
     return result.rows[0] || null;
   } catch { return null; }
 };
-
+// Pattern End
 // ─── EXPRESS APP ──────────────────────────────────────────────────────────────
 const app = express();
 const server = http.createServer(app);
@@ -510,6 +513,7 @@ app.delete('/api/messages/:id', authenticate, async (req, res) => {
 });
 
 // ─── GRAPHQL ──────────────────────────────────────────────────────────────────
+// GraphQL Resolver (Root Value) Structural Pattern
 const schema = buildSchema(`
   type User { id: ID! name: String! email: String! role: String! avatar: String bio: String }
   type Project { id: ID! title: String! description: String status: String owner_name: String created_at: String }
@@ -629,6 +633,7 @@ app.use('/graphql', async (req, res, next) => {
 });
 
 // ─── WEBSOCKET ────────────────────────────────────────────────────────────────
+// Observer / Pub-Sub	Behavioral Pattern
 const clients = new Map();
 const rooms = new Map();
 

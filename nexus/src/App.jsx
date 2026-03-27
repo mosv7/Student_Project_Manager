@@ -1,3 +1,5 @@
+// Route Guard Pattern
+
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -9,7 +11,6 @@ import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import Kanban from './pages/Kanban';
 import Messages from './pages/Messages';
-import Posts from './pages/Posts';
 import Team from './pages/Team';
 
 function Protected({ children }) {
@@ -41,7 +42,6 @@ export default function App() {
               <Route path="/projects/:id" element={<Protected><ProjectDetail /></Protected>} />
               <Route path="/tasks" element={<Protected><Kanban /></Protected>} />
               <Route path="/messages" element={<Protected><Messages /></Protected>} />
-              <Route path="/posts" element={<Protected><Posts /></Protected>} />
               <Route path="/team" element={<Protected><Team /></Protected>} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
