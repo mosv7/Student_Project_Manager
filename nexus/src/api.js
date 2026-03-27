@@ -1,3 +1,5 @@
+// Facade 
+
 const BASE = '/api';
 const tok = () => localStorage.getItem('token');
 const h = (x = {}) => ({ 'Content-Type': 'application/json', ...(tok() ? { Authorization: `Bearer ${tok()}` } : {}), ...x });

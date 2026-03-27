@@ -14,11 +14,30 @@ export default function Projects() {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const load = () => Promise.all([projects.list(), categories.list()])
-    .then(([p,c]) => { setList(p.projects||[]); setCats(c.categories||[]); })
-    .finally(() => setLoading(false));
+const load = async () => {
+  try {
+    setLoading(true);
 
-  useEffect(load, []);
+    const [p, c] = await Promise.all([
+      projects.list(),
+      categories.list()
+    ]);
+
+    console.log("Projects:", p);
+    console.log("Categories:", c);
+
+    setList(p.projects || []);
+    setCats(c.categories || []);
+  } catch (err) {
+    console.error("LOAD ERROR:", err);
+    toast(err.message || "Failed to load data", "err");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  useEffect(() => {load();}, []);
   const set = k => e => setForm(f => ({ ...f, [k]:e.target.value }));
 
   const create = async e => {
@@ -77,8 +96,11 @@ export default function Projects() {
                   <span style={{ fontSize:11, color:'var(--text-3)' }}>{p.category_name||'Uncategorized'}</span>
                 </div>
                 <div style={{ marginTop:12, paddingTop:12, borderTop:'1px solid var(--border)', fontSize:11, color:'var(--text-3)', display:'flex', justifyContent:'space-between' }}>
-                  <span>{p.owner_name}</span>
-                  <span>{new Date(p.created_at).toLocaleDateString()}</span>
+                  <span>{p.owner_name || 'Unknown'}</span>
+                <span>
+                    {p.created_at 
+                      ? new Date(p.created_at).toLocaleDateString() : '—'}
+                </span>
                 </div>
               </div>
             </div>
